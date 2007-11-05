@@ -386,13 +386,13 @@ switch $output_format {
 		<tr>
 		  <td class=form-label>Project Manager</td>
 		  <td class=form-widget>
-		    [im_user_select project_manager_id $project_manager_id]
+		    [im_user_select -include_empty_p 1 project_manager_id $project_manager_id]
 		  </td>
 		</tr>
 		<tr>
 		  <td class=form-label>Project Member</td>
 		  <td class=form-widget>
-		    [im_user_select project_member_id $project_member_id]
+		    [im_user_select -include_empty_p 1 project_member_id $project_member_id]
 		  </td>
 		</tr>
                 <tr>
