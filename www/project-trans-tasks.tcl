@@ -1,4 +1,4 @@
-# /packages/intranet-reporting/www/finance-quotes-pos.tcl
+# /packages/intranet-reporting-translation/www/finance-quotes-pos.tcl
 #
 # Copyright (C) 2003-2006 ]project-open[
 #
@@ -37,7 +37,7 @@ set read_p [db_string report_perms "
 
 if {![string equal "t" $read_p]} {
     ad_return_complaint 1 "<li>
-[lang::message::lookup "" intranet-reporting.You_dont_have_permissions "You don't have the necessary permissions to view this page"]"
+[lang::message::lookup "" intranet-reporting-translation.You_dont_have_permissions "You don't have the necessary permissions to view this page"]"
     return
 }
 
@@ -116,7 +116,7 @@ set project_url "/intranet/projects/view?project_id="
 set invoice_url "/intranet-invoices/view?invoice_id="
 
 set user_url "/intranet/users/view?user_id="
-set this_url [export_vars -base "/intranet-reporting/project-trans-tasks" {start_date end_date} ]
+set this_url [export_vars -base "/intranet-reporting-translation/project-trans-tasks" {start_date end_date} ]
 
 
 # ------------------------------------------------------------
@@ -431,7 +431,7 @@ set footer_array_list [list]
 set last_value_list [list]
 set class "rowodd"
 
-ns_log Notice "intranet-reporting/finance-quotes-pos: sql=\n$sql"
+ns_log Notice "intranet-reporting-translation/finance-quotes-pos: sql=\n$sql"
 
 db_foreach sql $sql {
 
