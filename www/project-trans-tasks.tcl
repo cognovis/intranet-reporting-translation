@@ -78,7 +78,7 @@ set rowclass(1) "rowodd"
 
 set default_currency [ad_parameter -package_id [im_package_cost_id] "DefaultCurrency" "" "EUR"]
 set cur_format [im_l10n_sql_currency_format]
-set date_format [im_l10n_sql_date_format]
+set date_format [parameter::get_from_package_key -package_key intranet-translation -parameter "TaskListEndDateFormat" -default "YYYY-MM-DD"]
 
 set days_in_past 30
 db_1row todays_date "
