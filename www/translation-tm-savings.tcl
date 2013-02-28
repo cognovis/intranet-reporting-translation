@@ -6,7 +6,7 @@
 # Please see http://www.project-open.com/ for licensing.
 
 ad_page_contract {
-    Lists risks per project, taking into account DynFields.
+    Lists translation task raw and discounted word counts per project
 } {
     { start_date "" }
     { end_date "" }
@@ -107,27 +107,20 @@ set date_format "YYYY-MM-DD"
 set company_url "/intranet/companies/view?company_id="
 set project_url "/intranet/projects/view?project_id="
 set user_url "/intranet/users/view?user_id="
-set this_url "[export_vars -base "/intranet-riskmanagement/project-risks-report" {} ]?"
+set this_url "[export_vars -base "/intranet-reporting-translation/project-risks-report" {} ]?"
 
 # Level of Details
 # Determines the LoD of the grouping to be displayed
 #
 set levels [list \
-    2 [lang::message::lookup "" intranet-riskmanagement.Risks_per_Project "Risks per Project"] \
-    3 [lang::message::lookup "" intranet-riskmanagement.All_Details "All Details"] \
+    2 [lang::message::lookup "" intranet-reporting-translation.Only_Main_Projects "Only Main Projects"] \
+    3 [lang::message::lookup "" intranet-reporting-translation.All_Details "All Details"] \
 ]
 
 
 # ------------------------------------------------------------
 # Report SQL
 #
-
-# Get dynamic risk fields
-#
-set deref_list [im_dynfield_object_attributes_derefs -object_type "im_risk" -prefix "r."]
-set deref_extra_select [join $deref_list ",\n\t"]
-if {"" != $deref_extra_select} { set deref_extra_select ",\n\t$deref_extra_select" }
-
 
 set customer_sql ""
 if {"" != $customer_id && 0 != $customer_id} {
