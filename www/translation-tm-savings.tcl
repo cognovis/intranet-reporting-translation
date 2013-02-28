@@ -191,13 +191,13 @@ order by
 
 # Global Header
 set header0 {
-	"Customer/<br>Project"
-	"Customer Contact"
-	"Source"
-	"Target"
-	"Raw Units"
-	"Billable Units"
-	"Saving"
+	"#align=center Customer/<br>Project"
+	"#align=center Customer Contact"
+	"#align=center Source"
+	"#align=center Target"
+	"#align=center Raw Units"
+	"#align=center Billable Units"
+	"#align=center Saving"
 }
 
 # Main content line
