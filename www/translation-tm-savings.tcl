@@ -399,7 +399,7 @@ db_foreach sql $report_sql {
 	}
 
         if {$department_exists_p} {
-	    set user_dept [db_string user_dept "select department_1 from persons where person_id = :customer_contact_id"]
+	    set user_dept [db_string user_dept "select department1 from persons where person_id = :customer_contact_id"]
 	    if {"" != $user_dept} {
 		append customer_contact_name " ($user_dept)"
 	    }
