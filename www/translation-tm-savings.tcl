@@ -107,7 +107,7 @@ set date_format "YYYY-MM-DD"
 set company_url "/intranet/companies/view?company_id="
 set project_url "/intranet/projects/view?project_id="
 set user_url "/intranet/users/view?user_id="
-set this_url "[export_vars -base "/intranet-reporting-translation/project-risks-report" {} ]?"
+set this_url "[export_vars -base "/intranet-reporting-translation/translation-tm-savings" {} ]?"
 
 # Level of Details
 # Determines the LoD of the grouping to be displayed
