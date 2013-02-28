@@ -171,7 +171,9 @@ from    (
 				im_projects main_p
 			where   t.project_id = p.project_id and
 				p.tree_sortkey between main_p.tree_sortkey and tree_right(main_p.tree_sortkey) and
-				main_p.parent_id is null
+				main_p.parent_id is null and
+				main_p.start_date <= :end_date and
+				main_p.end_date >= :start_date
 				$customer_sql
 			) t
 		group by
@@ -313,6 +315,18 @@ switch $output_format {
 		<table cellspacing=2>
 		<tr class=rowtitle>
 		  <td class=rowtitle colspan=2 align=center>Filters</td>
+		</tr>
+		<tr>
+		  <td class=form-label>Start Date</td>
+		  <td class=form-widget>
+		    <input type=textfield name=start_date value=$start_date>
+		  </td>
+		</tr>
+		<tr>
+		  <td class=form-label>End Date</td>
+		  <td class=form-widget>
+		    <input type=textfield name=end_date value=$end_date>
+		  </td>
 		</tr>
 		<tr>
 		  <td>Level of<br>Details</td>
