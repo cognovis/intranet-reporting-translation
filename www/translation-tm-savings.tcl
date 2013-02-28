@@ -424,7 +424,7 @@ db_foreach sql $report_sql {
 	    }
 	}
 
-        set raw_units_project_total_pretty [im_report_format_number [expr round(100.0 * $raw_units_project_total / 100.0] $output_format $number_locale]
+        set raw_units_project_total_pretty [im_report_format_number [expr round(100.0 * $raw_units_project_total) / 100.0] $output_format $number_locale]
         set billable_units_project_total_pretty [im_report_format_number [expr round(100.0 * $billable_units_project_total) / 100.0] $output_format $number_locale]
 
 	set last_value_list [im_report_render_header \
