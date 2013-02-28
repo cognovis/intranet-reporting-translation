@@ -71,6 +71,9 @@ if {"" != $end_date && ![regexp {[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]} $
     Expected format: 'YYYY-MM-DD'"
 }
 
+# Check if there is a department information about users
+set department_exists_p [im_column_exists persons department1]
+
 
 # ------------------------------------------------------------
 # Page Title, Bread Crums and Help
@@ -128,7 +131,7 @@ if {"" != $deref_extra_select} { set deref_extra_select ",\n\t$deref_extra_selec
 
 set customer_sql ""
 if {"" != $customer_id && 0 != $customer_id} {
-    set customer_sql "and main_p.customer_id = :customer_id\n"
+    set customer_sql "and main_p.company_id = :customer_id\n"
 } else {
     # No specific customer set
     set customer_sql ""
@@ -137,9 +140,6 @@ if {"" != $customer_id && 0 != $customer_id} {
 set report_sql "
 select	t.*,
 	source_language || '-' || target_language || '-' || main_project_id as language_combination,
-	CASE WHEN billable_units > 0.0 and raw_units > 0.0 THEN
-		to_char(100.0 * (t.raw_units - t.billable_units) / t.billable_units, '990.0')
-	ELSE 'undef' END as savings_percent,
 	(select pp.company_contact_id from im_projects pp where pp.project_id = t.main_project_id) as customer_contact_id,
 	(select im_name_from_user_id(pp.company_contact_id) from im_projects pp where pp.project_id = t.main_project_id) as customer_contact_name
 from    (
@@ -196,10 +196,8 @@ order by
 
 # Global Header
 set header0 {
-	"Customer"
-	"Main Project"
+	"Customer/<br>Project"
 	"Customer Contact"
-	"Customer Contact Dept"
 	"Source"
 	"Target"
 	"Raw Units"
@@ -209,9 +207,7 @@ set header0 {
 
 # Main content line
 set tm_vars {
-	"<a href='$company_url$customer_id'>$customer_name</a>"
 	"<a href='$project_url$main_project_id'>$main_project_nr</a>"
-	"<a href='$user_url$customer_contact_id'>$customer_contact_name</a>"
 	""
 	$source_language
 	$target_language
@@ -220,25 +216,46 @@ set tm_vars {
 	"#align=right $savings_percent_pretty"
 }
 
-set project_header {
-	"<a href=$this_url&customer_id=$customer_id&level_of_detail=3
+set customer_header {
+	"#colspan=10 <br><a href=$this_url&customer_id=$customer_id&level_of_detail=3
 	target=_blank><img src=/intranet/images/plus_9.gif width=9 height=9 border=0></a> 
-	<a href=$company_url$customer_id>$customer_name</a>"
-	"<a href=$project_url$main_project_id>$main_project_nr</a>"
+	<b><a href=$company_url$customer_id>$customer_name</a></b>"
+}
+
+set customer_footer {}
+
+set project_header { "#colspan=10 &nbsp;" }
+#        "#colspan=10 <b><a href=$project_url$main_project_id>$main_project_nr</a></b>" 
+# 
+
+
+set project_footer {
+    "<b><a href='$project_url$main_project_id'>$main_project_nr</a></b>"
+    "<b><a href='$user_url$customer_contact_id'>$customer_contact_name</a></b>"
+    ""
+    ""
+    "#align=right <b>$raw_units_project_total_pretty</b>"
+    "#align=right <b>$billable_units_project_total_pretty</b>"
+    "#align=right <b>$savings_percent_project_total_pretty</b>"
 }
 
 # The entries in this list include <a HREF=...> tags
 # in order to link the entries to the rest of the system (New!)
 #
 set report_def [list \
-    group_by main_project_id \
-    header $project_header \
+    group_by customer_id \
+    header $customer_header \
     content [list \
-	group_by language_combination \
-	header $tm_vars \
-	content {} \
-    ] \
-    footer {} \
+	    group_by main_project_id \
+	    header $project_header \
+	    content [list \
+		group_by language_combination \
+		header $tm_vars \
+		content {} \
+	    ] \
+	    footer $project_footer \
+   ] \
+   footer $customer_footer \
 ]
 
 
@@ -253,30 +270,29 @@ set footer0 {}
 #
 # Subtotal Counters (per project)
 #
-set project_risk_value_counter [list \
-	pretty_name "Risk Value" \
-	var risk_value \
+set raw_units_project_total_counter [list \
+	pretty_name "Raw Units" \
+	var raw_units_project_total \
 	reset \$main_project_id \
-	expr "\$risk_value+0" \
+	expr "\$raw_units+0" \
 ]
 
-set project_risk_value_total_counter [list \
-	pretty_name "Risk Value Total" \
-	var risk_value_total \
-	reset 0 \
-	expr "\$risk_value+0" \
+set billable_units_project_total_counter [list \
+	pretty_name "Raw Units" \
+	var billable_units_project_total \
+	reset \$main_project_id \
+	expr "\$billable_units+0" \
 ]
-
 
 set counters [list \
+	$raw_units_project_total_counter \
+	$billable_units_project_total_counter \
 ]
 
-#	$project_risk_value_counter \
-#	$project_risk_value_total_counter \
-
 # Set the values to 0 as default (New!)
-set risk_value 0
-set risk_value_total 0
+set raw_units_project_total 0
+set billable_units_project_total 0
+
 
 # ------------------------------------------------------------
 # Start Formatting the HTML Page Contents
@@ -357,15 +373,29 @@ set class ""
 db_foreach sql $report_sql {
 	set class $rowclass([expr $counter % 2])
 
+        set savings_percent "undef"
+        set savings_percent_pretty "undef"
+        if {$billable_units != "" && $raw_units != ""} {
+	    if {$billable_units > 0.0 && $raw_units > 0.0} {
+		set savings_percent [expr round(10000.0 * ($raw_units - $billable_units) / $billable_units) / 100.0]
+		set savings_percent_pretty "[im_report_format_number $savings_percent $output_format $number_locale]%"
+	    }
+	}
+
 	set raw_units_pretty [im_report_format_number $raw_units $output_format $number_locale]
 	set billable_units_pretty [im_report_format_number $billable_units $output_format $number_locale]
 
-    ns_log Notice "number_locale=$number_locale"
-
 	if {[string is double $savings_percent]} {
-	    set savings_percent_pretty [im_report_format_number $savings_percent $output_format $number_locale]
+	    set savings_percent_pretty "[im_report_format_number $savings_percent $output_format $number_locale]%"
 	} else {
 	    set savings_percent_pretty $savings_percent
+	}
+
+        if {$department_exists_p} {
+	    set user_dept [db_string user_dept "select department_1 from persons where person_id = :customer_contact_id"]
+	    if {"" != $user_dept} {
+		append customer_contact_name " ($user_dept)"
+	    }
 	}
 
 	im_report_display_footer \
@@ -378,6 +408,17 @@ db_foreach sql $report_sql {
 	    -cell_class $class
 
 	im_report_update_counters -counters $counters
+        set savings_percent_project_total "undef"
+        set savings_percent_project_total_pretty "undef"
+        if {$billable_units_project_total != "" && $raw_units_project_total != ""} {
+	    if {$billable_units_project_total > 0.0 && $raw_units_project_total > 0.0} {
+		set savings_percent_project_total [expr round(10000.0 * ($raw_units_project_total - $billable_units_project_total) / $billable_units_project_total) / 100.0]
+		set savings_percent_project_total_pretty "[im_report_format_number $savings_percent_project_total $output_format $number_locale]%"
+	    }
+	}
+
+        set raw_units_project_total_pretty [im_report_format_number $raw_units_project_total $output_format $number_locale]
+        set billable_units_project_total_pretty [im_report_format_number $billable_units_project_total $output_format $number_locale]
 
 	set last_value_list [im_report_render_header \
 	    -output_format $output_format \
