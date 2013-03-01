@@ -11,6 +11,7 @@ ad_page_contract {
     { start_date "" }
     { end_date "" }
     { customer_id "" }
+    { project_status_id "-1" }
     { level_of_detail:integer 3 }
     { output_format "html" }
     { number_locale "" }
@@ -37,6 +38,9 @@ if {![string equal "t" $read_p]} {
 # ------------------------------------------------------------
 # Check Parameters
 #
+
+# By default closed projects
+if {-1 == $project_status_id} { set project_status_id [im_project_status_closed] }
 
 # Maxlevel is 3. 
 if {$level_of_detail > 3} { set level_of_detail 3 }
@@ -127,6 +131,14 @@ if {"" != $customer_id && 0 != $customer_id} {
     set customer_sql ""
 }
 
+set project_status_sql ""
+if {"" != $project_status_id && 0 != $project_status_id} {
+    set project_status_sql "and main_p.project_status_id in (select im_sub_categories(:project_status_id))\n"
+} else {
+    # No specific customer set
+    set project_status_sql ""
+}
+
 set report_sql "
 select	t.*,
 	source_language || '-' || target_language || '-' || main_project_id as language_combination,
@@ -165,6 +177,7 @@ from    (
 				main_p.start_date <= :end_date and
 				main_p.end_date >= :start_date
 				$customer_sql
+				$project_status_sql
 			) t
 		group by
 			customer_id,
@@ -323,6 +336,10 @@ switch $output_format {
 		  <td>
 			[im_select -translate_p 0 level_of_detail $levels $level_of_detail]
 		  </td>
+		</tr>
+		<tr>
+		  <td>[lang::message::lookup "" intranet-core.Project_Status "Project Status"]:</td>
+		  <td>[im_category_select -include_empty_p 1 "Intranet Project Status" project_status_id $project_status_id]</td>
 		</tr>
 		<tr>
 		  <td>[lang::message::lookup "" intranet-core.Customer Customer]:</td>
