@@ -133,7 +133,7 @@ if {"" != $customer_id && 0 != $customer_id} {
 
 set project_status_sql ""
 if {"" != $project_status_id && 0 != $project_status_id} {
-    set project_status_sql "and main_p.project_status_id in (select im_sub_categories(:project_status_id))\n"
+    set project_status_sql "and main_p.project_status_id in (select * from im_sub_categories(:project_status_id))\n"
 } else {
     # No specific customer set
     set project_status_sql ""
