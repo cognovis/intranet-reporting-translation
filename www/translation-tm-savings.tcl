@@ -27,9 +27,6 @@ set read_p [db_string report_perms "
 	where	m.label = :menu_label
 " -default 'f']
 
-# For testing - set manually
-set read_p "t"
-
 if {![string equal "t" $read_p]} {
     set message "You don't have the necessary permissions to view this page"
     ad_return_complaint 1 "<li>$message"
