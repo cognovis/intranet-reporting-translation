@@ -17,7 +17,7 @@ ad_library {
 ad_proc -public im_package_reporting_translation_id {} {
     Returns the package id of the intranet-reporting-translation module
 } {
-    return [util_memoize "im_package_reporting_translation_id_helper"]
+    return [util_memoize im_package_reporting_translation_id_helper]
 }
 
 ad_proc -private im_package_reporting_translation_id_helper {} {
